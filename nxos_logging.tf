@@ -52,4 +52,10 @@ resource "nxos_logging" "logging" {
   # syslogOriginid
   origin_id_type  = try(local.device_config[each.key].logging.origin_id_type, null)
   origin_id_value = try(local.device_config[each.key].logging.origin_id_value, null)
+
+  # Per-facility levels (e.g. interface-vlan, lacp) are rejected until the
+  # matching feature is enabled.
+  depends_on = [
+    nxos_feature.feature,
+  ]
 }
