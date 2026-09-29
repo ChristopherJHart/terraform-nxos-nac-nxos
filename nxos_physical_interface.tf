@@ -171,7 +171,10 @@ resource "nxos_physical_interface" "physical_interface" {
     trunk_logging                      = try(int.logging_event_port_trunk_status, null) != null ? (try(int.logging_event_port_trunk_status) ? "enable" : "disable") : null
     trunk_vlans                        = try(int.channel_group, null) != null ? null : (!try(int.switchport.enabled, true) ? "1-4094" : try(provider::utils::normalize_vlans(try(int.switchport.trunk_allowed_vlans), "string-nxos"), null))
     uni_directional_ethernet           = try(int.uni_directional_ethernet, null)
-    user_configured_flags = try(int.channel_group, null) != null ? null : join(",", sort(compact([
+    # Members too: with channel-group force NX-OS records admin_layer on the
+    # member, and without admin_state flagged it keeps the port-channel's shut
+    # state even when admin_state is up.
+    user_configured_flags = join(",", sort(compact([
       "admin_layer",
       try(int.mtu, null) != null ? "admin_mtu" : "",
       try(int.mac_address, null) != null ? "admin_router_mac" : "",
